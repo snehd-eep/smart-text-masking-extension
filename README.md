@@ -8,8 +8,6 @@ This project provides a system for analyzing text and identifying sensitive info
 
 2. **Web Interface (`mask_analyzer.html`)**: A simple web interface for testing the masking analysis.
 
-3. **Extension Integration (`extension_integration.js`)**: JavaScript code that can be integrated with a Chrome extension to send text for analysis.
-
 ## Prerequisites
 
 - Python 3.7+
@@ -49,21 +47,6 @@ This project provides a system for analyzing text and identifying sensitive info
 2. Enter text in the textarea and click "Analyze Text".
 3. The results will show the original text, masked text, and a table of masking recommendations.
 
-### Integrating with a Chrome Extension
-
-1. Include the `extension_integration.js` file in your extension.
-2. Use the `MaskingAnalyzer` object to analyze text:
-
-   ```javascript
-   // Example: Analyze selected text
-   document.addEventListener('mouseup', () => {
-       const selectedText = window.getSelection().toString().trim();
-       if (selectedText) {
-           MaskingAnalyzer.showMaskingAnalysis(selectedText);
-       }
-   });
-   ```
-
 ## How It Works
 
 1. The text is sent to the Python backend.
@@ -101,24 +84,38 @@ MIT
 
 # Smart Text Masking Chrome Extension
 
-A Chrome extension that provides intelligent text masking suggestions for sensitive information in ChatGPT and other text input areas.
+A Chrome extension that provides real-time text analysis and masking suggestions using a local LLaMA model. The extension analyzes text input and suggests appropriate masking for potentially sensitive information.
 
 ## Features
 
-- **Real-time Text Analysis**: Analyzes text as you type to identify potentially sensitive information
-- **Smart Suggestions**: Provides context-aware suggestions for masking sensitive data
-- **Multiple Replacement Options**:
-  - Individual word replacement
+- **Real-time Text Analysis**: 
+  - Analyzes text as you type using a local LLaMA model
+  - Provides context-aware suggestions for sensitive information
+  - Background processing for smooth user experience
+
+- **Smart Suggestions**:
+  - Individual word replacement options
   - "Replace All" functionality for batch processing
-  - Custom replacement suggestions based on context
+  - Displays reason for each suggested masking
+  - Suggestions disappear after use
+
 - **User-Friendly Interface**:
   - Clean, modern UI with clear suggestions
-  - Hover effects for better interaction
+  - Floating suggestion container
   - Easy-to-use buttons for quick actions
-- **Intelligent Processing**:
-  - Debounced input handling to prevent excessive API calls
-  - Background processing to maintain smooth user experience
-  - Prevents duplicate suggestions for already masked text
+  - Container automatically closes when text is deleted
+
+- **Performance Optimizations**:
+  - Debounced input handling (500ms delay)
+  - Background analysis without blocking UI
+  - Efficient suggestion management
+  - No re-analysis of previously masked text
+
+## Prerequisites
+
+- Python 3.8 or higher
+- Chrome browser
+- Ollama with llama3:8b model installed
 
 ## Installation
 
@@ -129,64 +126,87 @@ A Chrome extension that provides intelligent text masking suggestions for sensit
 
 2. Install the required Python dependencies:
    ```bash
-   pip install flask transformers torch
+   pip install flask flask-cors requests pandas
    ```
 
-3. Load the extension in Chrome:
-   - Open Chrome and go to `chrome://extensions/`
+3. Install Ollama and the llama3:8b model:
+   ```bash
+   # Install Ollama (if not already installed)
+   # See https://ollama.ai/download for installation instructions
+   
+   # Pull the llama3:8b model
+   ollama pull llama3:8b
+   ```
+
+4. Load the extension in Chrome:
+   - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" in the top right
    - Click "Load unpacked" and select the extension directory
 
-## Setup
+## Usage
 
 1. Start the Python backend server:
    ```bash
    python test_masking_llama.py
    ```
 
-2. The extension will automatically connect to the local server running on port 5000
+2. The extension will automatically activate on text input areas
 
-## Usage
+3. As you type, the extension will:
+   - Analyze the text for sensitive information
+   - Show a suggestion container with:
+     - Individual word replacement options
+     - Reasons for suggested masking
+     - A "Replace All" button for batch processing
 
-1. The extension automatically activates on ChatGPT and other text input areas
-2. As you type, it analyzes the text for potentially sensitive information
-3. Suggestions appear in a floating container with:
-   - Individual word replacement options
-   - A "Replace All" button for batch processing
-   - Reasons for each suggested replacement
-4. Click on any suggestion to replace the word, or use "Replace All" to process all suggestions at once
+4. Interaction options:
+   - Click individual suggestions to replace specific words
+   - Use "Replace All" to apply all suggestions at once
+   - Close button to dismiss suggestions
+   - Container automatically closes when:
+     - All suggestions are used
+     - Text is deleted
+     - "Replace All" is clicked
+     - Close button is clicked
 
-## Features in Detail
+## Project Structure
 
-### Text Analysis
-- Real-time analysis of input text
-- Context-aware suggestion generation
-- Intelligent word boundary detection
-
-### Suggestion Interface
-- Clean, modern design
-- Hover effects for better interaction
-- Clear display of original and replacement words
-- Contextual reasons for suggestions
-
-### Replacement Options
-- Individual word replacement
-- Batch replacement with "Replace All"
-- Automatic removal of used suggestions
-- Prevention of duplicate suggestions
-
-### Performance
-- Debounced input handling (500ms delay)
-- Background processing
-- Efficient API usage
-- Smooth user experience
+```
+├── content/
+│   └── content.js          # Main extension functionality
+├── test_masking_llama.py   # Python backend server
+├── test_masking_ui.html    # Test UI for development
+├── manifest.json           # Extension configuration
+└── README.md              # Documentation
+```
 
 ## Technical Details
 
-- **Frontend**: Chrome Extension (JavaScript)
-- **Backend**: Python Flask Server
-- **Model**: Llama-based text analysis
-- **API Endpoint**: `http://localhost:5000/analyze`
+- **Frontend**: 
+  - Pure JavaScript implementation
+  - No external dependencies
+  - Event-driven architecture
+  - Debounced input handling
+
+- **Backend**:
+  - Flask server
+  - Ollama integration with llama3:8b model
+  - RESTful API endpoint
+  - Local processing for privacy
+
+- **API Endpoint**: 
+  - URL: `http://localhost:5000/analyze`
+  - Method: POST
+  - Input: JSON with text field
+  - Output: Markdown table with suggestions
+
+## Development
+
+- The extension uses a modular architecture
+- All UI is generated dynamically in JavaScript
+- Styling is handled inline for portability
+- Event handlers manage user interactions
+- Background processing prevents UI blocking
 
 ## Contributing
 
@@ -194,4 +214,4 @@ Feel free to submit issues and enhancement requests!
 
 ## License
 
-[Your chosen license] 
+MIT 
