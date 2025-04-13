@@ -134,8 +134,8 @@ A Chrome extension that provides real-time text analysis and masking suggestions
    # Install Ollama (if not already installed)
    # See https://ollama.ai/download for installation instructions
    
-   # Pull the llama3:8b model
-   ollama pull llama3:8b
+   # Pull and run the llama3:8b model
+   ollama run llama3:8b
    ```
 
 4. Load the extension in Chrome:
